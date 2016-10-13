@@ -44,11 +44,25 @@ namespace VeeamZipper
                 showError("File is too short");
             try
             {
-                if (processor.perform(args[1], args[2]))            
-                    showSuccess("File was successfully created: " + args[2]);      
+                var processorResult = false;
+                if (processor is IDisposable)
+                {
+                    using (processor as IDisposable)
+                    {
+                        processorResult = processor.perform(args[1], args[2]);
+                    }
+                }
                 else
+                {
+                    processorResult = processor.perform(args[1], args[2]);
+                }
+                if (processorResult)
+                    showSuccess("File was successfully created: " + args[2]);
+                else
+                {
                     Console.ReadKey();
                     Environment.Exit(ERROR_EXIT_CODE);
+                }
             }
             catch(Exception ex)
             {

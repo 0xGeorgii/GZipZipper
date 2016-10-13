@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace VeeamZipper
 {
-    class Compressor : IZipProcessor
+    class Compressor : IZipProcessor, IDisposable
     {
         public static int CORES_COUNT = ZipUtil.coresCount;
         public static int READ_BLOCKS_SIZE = 4096 * 1024;
@@ -86,6 +86,29 @@ namespace VeeamZipper
             }            
             isGZipComplete = true;
             writeThread.Join();
-        }        
+        }
+
+        #region IDisposable Support
+        private bool isDisposed = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!isDisposed)
+            {
+                if (disposing)
+                {
+                    ((IDisposable)destStream).Dispose();
+                    ((IDisposable)sourceStream).Dispose();
+                }
+                zippedBlocks = null;
+                isDisposed = true;
+            }
+        }
+        
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 }
