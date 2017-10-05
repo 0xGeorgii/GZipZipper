@@ -9,9 +9,9 @@ using System.Linq;
 
 namespace VeeamZipper
 {
-    class Compressor : IZipProcessor, IDisposable
+    internal class Compressor : IZipProcessor, IDisposable
     {
-        public static int CORES_COUNT = ZipUtil.coresCount;
+        public static int CORES_COUNT = ZipUtil.CoresCount;
         public static int READ_BLOCKS_SIZE = 4096 * 1024;
         public static int MAX_BLOCKS_COUNT = CORES_COUNT;
         public FileStream destStream = null;
@@ -20,9 +20,9 @@ namespace VeeamZipper
         public Dictionary<int, byte[]> zippedBlocks = new Dictionary<int, byte[]>();
                 
         public static bool IsReadingComplete = false;
-        public static bool isGZipComplete = false;
+        public static bool IsGZipComplete = false;
 
-        public bool perform(String source, String destination)
+        public bool Perform(string source, string destination)
         {
             var sw = new Stopwatch();
             using (sourceStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read, READ_BLOCKS_SIZE))
@@ -36,9 +36,8 @@ namespace VeeamZipper
                         {
                             using (var gzip = new GZipStream(destStream, CompressionMode.Compress))
                             {
-
                                 int count;
-                                byte[] buffer = new byte[READ_BLOCKS_SIZE];
+                                var buffer = new byte[READ_BLOCKS_SIZE];
                                 while ((count = sourceStream.Read(buffer, 0, buffer.Length)) > 0)
                                 {
                                     gzip.Write(buffer, 0, buffer.Length);
@@ -46,7 +45,7 @@ namespace VeeamZipper
                             }
                         }
                         else
-                            parallelCompress(sourceStream);
+                            ParallelCompress();
                     }
                     catch(Exception ex)
                     {
@@ -61,48 +60,46 @@ namespace VeeamZipper
         }
 
       
-        private void parallelCompress(Stream sourceStream)
+        private void ParallelCompress()
         {
             var sr = new SourceReader(this);
             var rw = new ResultWriter(this);
 
-            var readThread = new Thread(sr.start);
-            var writeThread = new Thread(rw.start);
+            var readThread = new Thread(sr.Start);
+            var writeThread = new Thread(rw.Start);
 
             var zipThreads = new Thread[CORES_COUNT];
-            for (int i = 0; i < zipThreads.Length; i++)
-                zipThreads[i] = new Thread((new ZipProcessor(this)).start);
+            for (var i = 0; i < zipThreads.Length; i++)
+                zipThreads[i] = new Thread((new ZipProcessor(this)).Start);
             
             readThread.Start();
-            for (int i = 0; i < zipThreads.Length; i++)            
+            for (var i = 0; i < zipThreads.Length; i++)            
                 zipThreads[i].Start();
             
             writeThread.Start();
 
 
-            for (int i = 0; i < zipThreads.Length; i++)
+            for (var i = 0; i < zipThreads.Length; i++)
             {
                 zipThreads[i].Join();
             }            
-            isGZipComplete = true;
+            IsGZipComplete = true;
             writeThread.Join();
         }
 
         #region IDisposable Support
-        private bool isDisposed = false;
+        private bool _isDisposed = false;
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!isDisposed)
+            if (_isDisposed) return;
+            if (disposing)
             {
-                if (disposing)
-                {
-                    ((IDisposable)destStream).Dispose();
-                    ((IDisposable)sourceStream).Dispose();
-                }
-                zippedBlocks = null;
-                isDisposed = true;
+                ((IDisposable)destStream).Dispose();
+                ((IDisposable)sourceStream).Dispose();
             }
+            zippedBlocks = null;
+            _isDisposed = true;
         }
         
         public void Dispose()

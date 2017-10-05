@@ -9,18 +9,18 @@ namespace VeeamZipper
 {
     class ResultWriter
     {
-        Compressor compressor;
+        private readonly Compressor _compressor;
 
         public ResultWriter(Compressor comp)
         {
-            compressor = comp;
+            _compressor = comp;
         }
 
-        public void start()
+        public void Start()
         {
             try
             {
-                _start();
+                _Start();
             }
             catch(Exception ex)
             {
@@ -28,19 +28,19 @@ namespace VeeamZipper
                 Program.IsCancelled = true;
             }
         }
-        private  void _start()
+        private  void _Start()
         {
             byte[] item;
             int nextBlockNumber = 1;
             while (!Program.IsCancelled)
             {
                 item = null;
-                lock (compressor.blocksQueue)
+                lock (_compressor.blocksQueue)
                 {
-                    if (compressor.zippedBlocks.ContainsKey(nextBlockNumber))
+                    if (_compressor.zippedBlocks.ContainsKey(nextBlockNumber))
                     {
-                        item = compressor.zippedBlocks[nextBlockNumber++];
-                        compressor.zippedBlocks.Remove(nextBlockNumber - 1);
+                        item = _compressor.zippedBlocks[nextBlockNumber++];
+                        _compressor.zippedBlocks.Remove(nextBlockNumber - 1);
                     }
                 }
                 if (item == null)
@@ -51,14 +51,14 @@ namespace VeeamZipper
 
                 //Console.WriteLine("writeThread: writing zipped blocks [" + (blockNumber - 1) + "]");
                 int len = item.Length;
-                compressor.destStream.WriteByte((byte)(len & 0xff));
-                compressor.destStream.WriteByte((byte)((len >> 8) & 0xff));
-                compressor.destStream.WriteByte((byte)((len >> 16) & 0xff));
-                compressor.destStream.WriteByte((byte)((len >> 24) & 0xff));
+                _compressor.destStream.WriteByte((byte)(len & 0xff));
+                _compressor.destStream.WriteByte((byte)((len >> 8) & 0xff));
+                _compressor.destStream.WriteByte((byte)((len >> 16) & 0xff));
+                _compressor.destStream.WriteByte((byte)((len >> 24) & 0xff));
                 //Console.WriteLine("block length [" + len + "]");
-                compressor.destStream.Write(item, 0, len);
+                _compressor.destStream.Write(item, 0, len);
                 Console.Write(".");
-                if (Compressor.isGZipComplete && compressor.zippedBlocks.Count == 0)
+                if (Compressor.IsGZipComplete && _compressor.zippedBlocks.Count == 0)
                 {
                     Console.Write("\r\n");
                     break;

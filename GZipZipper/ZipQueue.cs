@@ -23,7 +23,7 @@ namespace VeeamZipper
             }
         }
 
-        object locker = new object();
+        readonly object _locker = new object();
 
         //
         // Summary:
@@ -35,7 +35,7 @@ namespace VeeamZipper
         //     null for reference types.
         public void Enqueue(byte[] d)
         {
-            lock(locker)
+            lock(_locker)
             {
                 base.Enqueue(new ZipBlock(d));
             }
@@ -43,7 +43,7 @@ namespace VeeamZipper
 
         new public void Enqueue(ZipBlock zipBlock)
         {
-            lock(locker)
+            lock(_locker)
             {
                 base.Enqueue(zipBlock);
             }
@@ -52,7 +52,7 @@ namespace VeeamZipper
         public ZipBlock DequeueLock()
         {
             ZipBlock item;
-            lock (locker)
+            lock (_locker)
             {
                 if (Count == 0) return null;
                 item = base.Dequeue();
@@ -63,7 +63,7 @@ namespace VeeamZipper
         public int CountLock()
         {
             int i;
-            lock(locker)
+            lock(_locker)
             {
                 i = base.Count;
             }

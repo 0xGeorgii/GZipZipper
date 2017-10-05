@@ -18,7 +18,7 @@ namespace VeeamZipper
             compressor = comp;
         }
 
-        public void start()
+        public void Start()
         {
             ZipQueue.ZipBlock zb = null;
             try
@@ -42,7 +42,7 @@ namespace VeeamZipper
                         if (zb == null) continue;
                     }
                     //Console.WriteLine("zipThread " + Thread.CurrentThread.Name + " read buffer block [" + zb.number + "]");
-                    var b = ZipUtil.compress(zb.data);
+                    var b = ZipUtil.Compress(zb.data);
                     lock (compressor.zippedBlocks)
                     {
                         compressor.zippedBlocks.Add(zb.number, b);

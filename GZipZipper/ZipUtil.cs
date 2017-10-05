@@ -9,43 +9,43 @@ namespace VeeamZipper
 {
     public static class ZipUtil
     {
-        public static int coresCount = Environment.ProcessorCount;
-        private static object ziplock = new object();
+        private const int BUFF_SIZE = 65536;
+        public static int CoresCount = Environment.ProcessorCount;
+        private static object _ziplock = new object();
         
-        public static byte[] compress(byte[] buffer)
+        public static byte[] Compress(byte[] buffer)
         {
-            using (MemoryStream ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             using (var gzip = new GZipStream(ms, CompressionMode.Compress))
             {
                 gzip.Write(buffer, 0, buffer.Length);
-                gzip.Close();
                 return ms.ToArray();
             }
         }
 
-        public static byte[] decompress(byte[] content)
+        public static byte[] Decompress(byte[] content)
         {
-            using (MemoryStream ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
-                GZipStream zip = new GZipStream(new MemoryStream(content), CompressionMode.Decompress);
-                copyStream(zip, ms);
+                var zip = new GZipStream(new MemoryStream(content), CompressionMode.Decompress);
+                CopyStream(zip, ms);
                 return ms.ToArray();
             }            
         }
 
-        public static void copyStream(Stream instream, Stream outstream)
+        public static void CopyStream(Stream instream, Stream outstream)
         {
-            long MB = 10 * 1024 * 1024;
-            byte[] buffer = new byte[65536];
+            const long mb = 10 * 1024 * 1024;
+            var buffer = new byte[BUFF_SIZE];
             long pos = 0;
             long c = 0;
             while (true)
             {
-                int k = instream.Read(buffer, 0, 65536);
+                var k = instream.Read(buffer, 0, BUFF_SIZE);
                 pos += k;
                 if (k == 0) break;
                 outstream.Write(buffer, 0, k);
-                var c1 = pos / MB;
+                var c1 = pos / mb;
                 if (c1 > c)
                 {
                     c = c1;

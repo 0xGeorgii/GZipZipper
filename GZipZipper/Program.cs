@@ -8,12 +8,12 @@ namespace VeeamZipper
 {
     class Program
     {
-        const Int32 SUCCESS_EXIT_CODE = 0;
-        const Int32 ERROR_EXIT_CODE = 1;
-        const String COMPRESS_COMMAND = "compress";
-        const String DECOMPRESS_COMMAND = "decompress";
-        const String INCORRECT_COMMAND_ERROR = "Use one of command: " + COMPRESS_COMMAND + " | " + DECOMPRESS_COMMAND;
-        const String INCORRECT_FORMAT_ERROR = "Use command line query in format: \"[command] [source file name] [archive name]\"";
+        private const int SUCCESS_EXIT_CODE = 0;
+        private const int ERROR_EXIT_CODE = 1;
+        private const string COMPRESS_COMMAND = "compress";
+        private const string DECOMPRESS_COMMAND = "decompress";
+        private const string INCORRECT_COMMAND_ERROR = "Use one of command: " + COMPRESS_COMMAND + " | " + DECOMPRESS_COMMAND;
+        private const string INCORRECT_FORMAT_ERROR = "Use command line query in format: \"[command] [source file name] [archive name]\"";
 
         static IZipProcessor processor = null;
         public static bool IsCancelled = false;
@@ -29,19 +29,19 @@ namespace VeeamZipper
             };
 
             if(args.Length == 0)            
-                showError(INCORRECT_COMMAND_ERROR);
+                ShowError(INCORRECT_COMMAND_ERROR);
             else if(args.Length != 3)            
-                showError(INCORRECT_FORMAT_ERROR);
+                ShowError(INCORRECT_FORMAT_ERROR);
             if (args[0].Equals(COMPRESS_COMMAND, StringComparison.OrdinalIgnoreCase))
                 processor = new Compressor();
             else if (args[0].Equals(DECOMPRESS_COMMAND, StringComparison.OrdinalIgnoreCase))
                 processor = new Decompressor();
             else
-                showError("Unindefined command " + args[0] + " (expect one of: " + COMPRESS_COMMAND + "/" + DECOMPRESS_COMMAND + ")");
+                ShowError("Unindefined command " + args[0] + " (expect one of: " + COMPRESS_COMMAND + "/" + DECOMPRESS_COMMAND + ")");
             if(!File.Exists(args[1]))
-                showError("File " + args[1] + " is not found");
+                ShowError("File " + args[1] + " is not found");
             if (new FileInfo(args[1]).Length < 10)
-                showError("File is too short");
+                ShowError("File is too short");
             try
             {
                 var processorResult = false;
@@ -49,15 +49,15 @@ namespace VeeamZipper
                 {
                     using (processor as IDisposable)
                     {
-                        processorResult = processor.perform(args[1], args[2]);
+                        processorResult = processor.Perform(args[1], args[2]);
                     }
                 }
                 else
                 {
-                    processorResult = processor.perform(args[1], args[2]);
+                    processorResult = processor.Perform(args[1], args[2]);
                 }
                 if (processorResult)
-                    showSuccess("File was successfully created: " + args[2]);
+                    ShowSuccess("File was successfully created: " + args[2]);
                 else
                 {
                     Console.ReadKey();
@@ -70,7 +70,7 @@ namespace VeeamZipper
             }
         }
 
-        static void showError(String text)
+        static void ShowError(string text)
         {
             Console.WriteLine(text);
             Logger.error(text);
@@ -78,7 +78,7 @@ namespace VeeamZipper
             Environment.Exit(ERROR_EXIT_CODE);
         }
 
-        static void showSuccess(String text)
+        static void ShowSuccess(string text)
         {
             Console.WriteLine(text);
             Console.ReadKey();

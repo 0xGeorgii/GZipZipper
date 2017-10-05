@@ -17,11 +17,11 @@ namespace VeeamZipper
             compressor = comp;
         }
 
-        public void start()
+        public void Start()
         {
             try
             {
-                _start();
+                _Start();
             }
             catch (Exception ex)
             {
@@ -29,7 +29,7 @@ namespace VeeamZipper
                 Program.IsCancelled = true;
             }
         }
-        private void _start()
+        private void _Start()
         {
             int count;
             byte[] buffer = new byte[Compressor.READ_BLOCKS_SIZE];

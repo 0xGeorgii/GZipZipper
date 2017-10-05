@@ -7,6 +7,6 @@ namespace VeeamZipper
 {
     interface IZipProcessor
     {
-        bool perform(String source, String destination);
+        bool Perform(string source, string destination);
     }
 }

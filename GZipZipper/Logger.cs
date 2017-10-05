@@ -19,6 +19,7 @@ namespace VeeamZipper
         public static Encoding encoding = Encoding.GetEncoding(1251);
         const String LOG_FILENAME = "log.txt";
         static StreamWriter logWriter;
+        private static readonly object _lock = new object();
 
         static Logger()
         {
@@ -28,11 +29,11 @@ namespace VeeamZipper
             logWriter = new StreamWriter(fname, true, encoding);
         }
         
-        private static void writeLine(String alertLevel, String msg)
+        private static void WriteLine(String alertLevel, String msg)
         {
             if (logWriter == null) return;
             String s = "[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "][" + alertLevel + "]" + msg;
-            lock (logWriter)
+            lock (_lock)
             {
                 logWriter.WriteLine(s);
                 logWriter.Flush();
@@ -42,41 +43,41 @@ namespace VeeamZipper
         public static void trace(String msg)
         {
             if (AlertLevel > TRACE) return;
-            writeLine("[TRACE]", msg);
+            WriteLine("[TRACE]", msg);
         }
 
         public static void debug(String msg)
         {
             if (AlertLevel > DEBUG) return;
-            writeLine("DEBUG", msg);
+            WriteLine("DEBUG", msg);
         }
 
         public static void info(String msg)
         {
             if (AlertLevel > INFO) return;
-            writeLine("INFO", msg);
+            WriteLine("INFO", msg);
         }
 
         public static void warn(String msg)
         {
             if (AlertLevel > WARN) return;
-            writeLine("WARN", msg);
+            WriteLine("WARN", msg);
         }
 
         public static void error(String msg)
         {
             if (AlertLevel > ERROR) return;
-            writeLine("ERROR", msg);
+            WriteLine("ERROR", msg);
         }
 
         public static void error(String msg, Exception ex)
         {
             if (AlertLevel > ERROR) return;
-            writeLine("ERROR", msg + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+            WriteLine("ERROR", msg + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
             Exception inner = ex.InnerException;
             while (inner != null)
             {
-                writeLine("ERROR", "Inner exception: " + inner.Message + "\r\nв " +
+                WriteLine("ERROR", "Inner exception: " + inner.Message + "\r\nв " +
                     inner.Source + "\r\n" + inner.StackTrace);
                 inner = inner.InnerException;
             }
@@ -85,17 +86,17 @@ namespace VeeamZipper
         public static void fatal(String msg)
         {
             if (AlertLevel > FATAL) return;
-            writeLine("FATAL", msg);
+            WriteLine("FATAL", msg);
         }
 
         public static void fatal(String msg, Exception ex)
         {
             if (AlertLevel > FATAL) return;
-            writeLine("FATAL", msg + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+            WriteLine("FATAL", msg + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
             Exception inner = ex.InnerException;
             while (inner != null)
             {
-                writeLine("FATAL", "Inner exception: " + inner.Message + "\r\nв " +
+                WriteLine("FATAL", "Inner exception: " + inner.Message + "\r\nв " +
                     inner.Source + "\r\n" + inner.StackTrace);
                 inner = inner.InnerException;
             }
